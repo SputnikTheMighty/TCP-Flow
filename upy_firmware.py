@@ -36,7 +36,7 @@ while True:
     while True:
         # Receive data from the client
         data = conn.recv(1024)
-        print(data)
+        print(data[0:4])
 
         # If the client disconnected, break out of the loop
         if not data:
@@ -46,7 +46,8 @@ while True:
         values = bytearray(data)
 
         while len(values) > 3:
-            np[values[0]] = (values[1], values[2], values[3])
+            if values[0] < NUM_LEDS:
+                np[values[0]] = (values[1], values[2], values[3])
             values = values[4:]
 
         # Update the LEDs
