@@ -42,16 +42,12 @@ while True:
         if not data:
             break
 
-        if len(data) < 3:
-            print("not enough data")
-            break
-
         # Convert the data to a list of integers
         values = bytearray(data)
 
-        # Set the color of the WS2815 LEDs
-        for i in range(NUM_LEDS):
-            np[i] = (values[0], values[1], values[2])
+        while len(values) > 3:
+            np[values[0]] = (values[1], values[2], values[3])
+            values = values[4:]
 
         # Update the LEDs
         np.write()
