@@ -4,9 +4,10 @@ import socket
 import struct
 import network
 import time
+import vars
 
-SSID = "TP-Link_DA66"
-PASSWORD = ""
+SSID = vars.WIFI_SSID
+PASSWORD = vars.WIFI_PASS
 NUM_LEDS = 16
 
 # Create a neopixel object on pin GP2

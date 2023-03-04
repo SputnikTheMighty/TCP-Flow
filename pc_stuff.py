@@ -7,11 +7,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST, PORT))
 
 # send data to the server
-s.send(b'\x00\x0F\x00')
-
-# receive data from the server
-response = s.recv(1024)
-print(response)
+s.send(b'\x00\x00\x0F')
 
 # close the connection
 s.close()
