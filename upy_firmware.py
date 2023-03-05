@@ -5,6 +5,7 @@ import struct
 import network
 import time
 import vars
+from message import Message
 
 SSID = vars.WIFI_SSID
 PASSWORD = vars.WIFI_PASS
@@ -32,26 +33,37 @@ while True:
     conn, addr = server.accept()
     print('Connected by', addr)
 
-    # Loop until the client disconnects
-    while True:
-        # Receive data from the client
-        data = conn.recv(1024)
-        print(data[0:4])
+    message = Message()
+    completed_messages = 0
 
-        # If the client disconnected, break out of the loop
-        if not data:
-            break
+    try:
 
-        # Convert the data to a list of integers
-        values = bytearray(data)
+        while True:
 
-        while len(values) > 3:
-            if values[0] < NUM_LEDS:
-                np[values[0]] = (values[1], values[2], values[3])
-            values = values[4:]
+            try:
+                # Receive data from the client
+                data = conn.recv(1024)
+                message.append(data)
+                command = message.validate_message()
+                completed_messages += 1
 
-        # Update the LEDs
-        np.write()
+                values = message.data
 
-    # Close the connection
-    conn.close()
+                while len(values) > 3:
+                    if values[0] < NUM_LEDS:
+                        np[values[0]] = (values[1], values[2], values[3])
+                    values = values[4:]
+
+                # Update the LEDs
+                np.write()
+            
+            except KeyboardInterrupt:
+                raise
+           
+            except Exception as e:
+                print(e)
+
+    finally:
+        print("messages: {}".format(message.new_messages))
+        print("completed messages: {}".format(completed_messages))
+        conn.close()

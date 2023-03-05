@@ -12,18 +12,17 @@ class Message:
     def __init__(self) -> None:
         self.message = bytearray()
         self.last_byte_was_escape = False
+        self.new_messages = 0
 
     def validate_message(self) -> bytearray:
-        header = self.Header._make(struct.unpack('>BHB', self.message[:struct.calcsize('>BHB')]))
-        assert header.sof == self.SOF, f"SOF not present"
-        assert header.len == len(self.message) - len(header), f"length of message is {len(self.message)}"
-        return self.message[4:]
+        header = self.Header(*struct.unpack('>BHB', self.message[:struct.calcsize('>BHB')]))
+        assert header.sof == self.SOF, "SOF not present"
+        assert header.len == len(self.message) - len(header), "length of message is {}".format(len(self.message))
+        self.data = self.message[struct.calcsize('>BHB'):]
+        return header.cmd
 
     def append(self, raw):
         for b in raw:
-            if b == self.ESC:
-                self.last_byte_was_escape = True
-                continue
 
             if self.last_byte_was_escape:
                 self.last_byte_was_escape = False
@@ -31,9 +30,17 @@ class Message:
                 if b == self.SOF:
                     print("data transfer cancelled by sender")
                     self.message = bytearray()
-                    return
-                
-                self.message.append(b ^ self.XOR)
+                else:
+                    self.message.append(b ^ self.XOR)
+            
+            elif b == self.SOF:
+                self.message = bytearray()
+                self.message.append(b)
+                self.new_messages += 1
+            
+            elif b == self.ESC:
+                self.last_byte_was_escape = True
+
             else:
                 self.message.append(b)
 
